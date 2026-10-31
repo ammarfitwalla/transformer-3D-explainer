@@ -2,6 +2,8 @@
 
 An interactive 3D visual explainer of the Transformer architecture. Orbit a floating encoder–decoder model, click any block, and follow the data step by step as the prompt **"The coffee is"** becomes the prediction **"hot"**.
 
+### ▶ [Open the Live Demo](https://ammarfitwalla.github.io/transformer-3D-explainer/)
+
 Built with Three.js and vanilla JavaScript. No build step, no framework, no dependencies to install.
 
 ![Three.js](https://img.shields.io/badge/Three.js-r128-black)
@@ -25,17 +27,7 @@ Built with Three.js and vanilla JavaScript. No build step, no framework, no depe
 
 No Python, Node.js, package manager, or build step is required — this is a static site.
 
-Open `index.html` directly in any modern browser with WebGL support. That's it.
-
-If you would rather test over `http://` (closer to how GitHub Pages serves it), use any static file server you already have. For example:
-
-```bash
-cd transformer_3d_explainer
-python3 -m http.server 8000   # only if Python happens to be installed
-# or: npx serve .             # only if Node.js happens to be installed
-```
-
-Then visit <http://localhost:8000>.
+**[Open the live demo](https://ammarfitwalla.github.io/transformer-3D-explainer/)** or open `index.html` directly in any modern browser with WebGL support. That's it.
 
 > An internet connection is required: Three.js is loaded from a CDN. The Tailwind stylesheet is precompiled and served locally.
 
