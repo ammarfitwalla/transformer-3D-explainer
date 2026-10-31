@@ -8,7 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body class="h-screen w-screen flex flex-col overflow-hidden">
+<body class="w-screen flex flex-col overflow-hidden">
 
   <!-- ==================== CLEAN TOP NAVIGATION BAR ==================== -->
   <header class="shrink-0 bg-white/90 backdrop-blur border-b border-slate-200 px-4 py-2.5 z-30 flex flex-wrap items-center justify-between gap-3 shadow-sm">
@@ -80,9 +80,10 @@
       info-glass-card
       absolute bottom-4 right-4 left-4 sm:left-auto sm:w-[430px]
       rounded-2xl p-4 sm:p-5 z-20 pointer-events-auto
+      flex flex-col max-h-[calc(100%-1.5rem)]
     ">
-      <!-- Top Header Row with Step Badge, Counter, and X Close Button -->
-      <div class="flex items-center justify-between gap-2 mb-1.5">
+      <!-- Top Header Row with Step Badge, Counter, and X Close Button (always visible) -->
+      <div class="flex items-center justify-between gap-2 mb-1.5 shrink-0">
         <span id="info-badge" class="text-[11px] font-extrabold tracking-wider text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
           INPUT STREAM · STEP 1 OF 21
         </span>
@@ -94,44 +95,47 @@
         </div>
       </div>
 
-      <h2 id="info-title" class="text-lg font-extrabold text-slate-900 mb-2">
-        Inputs
-      </h2>
+      <!-- Scrollable content: keeps the Prev/Next controls visible on small screens -->
+      <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1">
+        <h2 id="info-title" class="text-lg font-extrabold text-slate-900 mb-2">
+          Inputs
+        </h2>
 
-      <!-- SIMPLE LIVE DATA TRANSFORMATION BOX ("What Happens to Data Here") -->
-      <div class="p-3 rounded-xl bg-slate-900 text-white mb-3 border border-slate-700 shadow-inner">
-        <div class="flex items-center justify-between mb-1.5">
-          <span id="data-flow-badge" class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
-            📝 Raw Prompt ➔ Word Tickets
-          </span>
-          <span class="text-[10px] font-mono text-slate-400">Live Example</span>
+        <!-- SIMPLE LIVE DATA TRANSFORMATION BOX ("What Happens to Data Here") -->
+        <div class="p-3 rounded-xl bg-slate-900 text-white mb-3 border border-slate-700 shadow-inner">
+          <div class="flex items-center justify-between mb-1.5">
+            <span id="data-flow-badge" class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
+              📝 Raw Prompt ➔ Word Tickets
+            </span>
+            <span class="text-[10px] font-mono text-slate-400">Live Example</span>
+          </div>
+          <div class="grid grid-cols-1 gap-1 text-xs font-mono">
+            <div class="flex items-center justify-between bg-slate-800/90 px-2.5 py-1 rounded-lg">
+              <span class="text-[10px] uppercase text-slate-400 font-sans font-bold">In:</span>
+              <span id="data-before" class="text-slate-200 truncate ml-2">"The coffee is"</span>
+            </div>
+            <div class="flex items-center justify-center text-[11px] text-amber-400 font-sans font-bold py-0.5">
+              ⬇ <span id="data-action" class="mx-1">Split into 3 tokens</span> ⬇
+            </div>
+            <div class="flex items-center justify-between bg-emerald-950/80 border border-emerald-700/60 px-2.5 py-1 rounded-lg">
+              <span class="text-[10px] uppercase text-emerald-400 font-sans font-bold">Out:</span>
+              <span id="data-after" class="text-emerald-300 font-bold truncate ml-2">["The" #104] ["coffee" #402] ["is" #219]</span>
+            </div>
+          </div>
         </div>
-        <div class="grid grid-cols-1 gap-1 text-xs font-mono">
-          <div class="flex items-center justify-between bg-slate-800/90 px-2.5 py-1 rounded-lg">
-            <span class="text-[10px] uppercase text-slate-400 font-sans font-bold">In:</span>
-            <span id="data-before" class="text-slate-200 truncate ml-2">"The coffee is"</span>
-          </div>
-          <div class="flex items-center justify-center text-[11px] text-amber-400 font-sans font-bold py-0.5">
-            ⬇ <span id="data-action" class="mx-1">Split into 3 tokens</span> ⬇
-          </div>
-          <div class="flex items-center justify-between bg-emerald-950/80 border border-emerald-700/60 px-2.5 py-1 rounded-lg">
-            <span class="text-[10px] uppercase text-emerald-400 font-sans font-bold">Out:</span>
-            <span id="data-after" class="text-emerald-300 font-bold truncate ml-2">["The" #104] ["coffee" #402] ["is" #219]</span>
-          </div>
+
+        <!-- 2 to 4 Simple Lines Explaining What the Component Does -->
+        <div id="info-body" class="text-xs text-slate-700 space-y-1.5 leading-relaxed mb-2.5"></div>
+
+        <!-- 1-Line "Why It's Important" Highlight -->
+        <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 mb-3">
+          <strong class="font-extrabold">Why it matters:</strong>
+          <span id="info-why">Turns human words into numerical IDs that can flow upward into the Encoder tower.</span>
         </div>
       </div>
 
-      <!-- 2 to 4 Simple Lines Explaining What the Component Does -->
-      <div id="info-body" class="text-xs text-slate-700 space-y-1.5 leading-relaxed mb-2.5"></div>
-
-      <!-- 1-Line "Why It's Important" Highlight -->
-      <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 mb-3">
-        <strong class="font-extrabold">Why it matters:</strong>
-        <span id="info-why">Turns human words into numerical IDs that can flow upward into the Encoder tower.</span>
-      </div>
-
-      <!-- Prev / Next Component Guided Stepper -->
-      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200">
+      <!-- Prev / Next Component Guided Stepper (always visible) -->
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200 shrink-0">
         <button id="prev-comp-btn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition">
           ← Prev Component
         </button>
