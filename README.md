@@ -44,8 +44,10 @@ Then visit <http://localhost:8000>.
 | Action | Input |
 | --- | --- |
 | Orbit the scene | Left-drag |
-| Pan | Shift-drag or right-drag |
-| Zoom | Scroll wheel, or the `+` / `−` buttons |
+| Pan (desktop) | Shift-drag or right-drag |
+| Pan (touch) | Two-finger drag |
+| Zoom (desktop) | Scroll wheel, or the `+` / `−` buttons |
+| Zoom (touch) | Pinch with two fingers |
 | Select a component | Click a floating tag or a 3D block |
 | Start / pause the tour | ▶ Follow the Data |
 | Step through components | ← Prev Component / Next Component → |
@@ -113,7 +115,6 @@ npx --yes tailwindcss@3.4.17 -c tailwind.config.js -i css/tailwind.input.css -o 
 - The in-app **📂 Code** modal is a stub: it shows a placeholder message because the embedded source bundle (`window.ModularSourcesB64`) is not included. Use the GitHub source view instead.
 - Encoder and decoder tower shells are selectable only through their labels, not by clicking the translucent 3D box.
 - Requires WebGL and network access to the Three.js CDN.
-- Touch supports orbit, but pinch-zoom and two-finger pan are not implemented; use the on-screen zoom buttons.
 
 ## License
 

@@ -29,6 +29,10 @@ window.TransformerScene3D = class TransformerScene3D {
       desiredPhi: 1.42
     };
 
+    // Responsive framing: computed in onResize() so portrait phones fit the whole diagram.
+    this.fitRadius = 26.5;
+    this.hasAutoFitted = false;
+
     this.meshesById = {};
     this.clickableMeshes = [];
     this.tagElementsById = {};
@@ -441,26 +445,28 @@ window.TransformerScene3D = class TransformerScene3D {
   }
 
   setCameraPreset(preset) {
+    // Keep the preset from cropping the towers on narrow/portrait screens.
+    const fitR = Math.max(26.5, this.fitRadius || 26.5);
     if (preset === 'front') {
       this.desiredTarget.set(0, 0.4, 0);
-      this.spherical.desiredRadius = 26.5;
+      this.spherical.desiredRadius = fitR;
       this.spherical.desiredTheta = 0.0;
       this.spherical.desiredPhi = Math.PI / 2;
     } else if (preset === 'angle3d') {
       this.desiredTarget.set(0, 0.4, 0);
-      this.spherical.desiredRadius = 26.5;
+      this.spherical.desiredRadius = fitR;
       this.spherical.desiredTheta = 0.38;
       this.spherical.desiredPhi = 1.34;
     } else if (preset === 'side') {
       this.desiredTarget.set(0, 0.2, 0);
-      this.spherical.desiredRadius = 25.0;
+      this.spherical.desiredRadius = Math.max(25.0, this.fitRadius || 25.0);
       this.spherical.desiredTheta = 0.92;
       this.spherical.desiredPhi = 1.42;
     }
   }
 
   zoomDelta(delta) {
-    this.spherical.desiredRadius = Math.max(12, Math.min(42, this.spherical.desiredRadius + delta));
+    this.spherical.desiredRadius = Math.max(12, Math.min(70, this.spherical.desiredRadius + delta));
   }
 
   bindInteraction() {
@@ -469,6 +475,12 @@ window.TransformerScene3D = class TransformerScene3D {
     let startX = 0;
     let startY = 0;
     let movedDistance = 0;
+
+    // Touch gesture state: one finger = rotate, two fingers = pan + pinch zoom.
+    let touchMode = null;
+    let lastTouchMidX = 0;
+    let lastTouchMidY = 0;
+    let lastTouchDist = 0;
 
     const dom = this.renderer.domElement;
 
@@ -523,25 +535,83 @@ window.TransformerScene3D = class TransformerScene3D {
 
     dom.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
+        touchMode = 'rotate';
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        movedDistance = 0;
+      } else if (e.touches.length === 2) {
+        touchMode = 'pan';
+        isDragging = false;
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        lastTouchMidX = (t0.clientX + t1.clientX) / 2;
+        lastTouchMidY = (t0.clientY + t1.clientY) / 2;
+        lastTouchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      }
+    }, { passive: false });
+
+    dom.addEventListener('touchmove', (e) => {
+      // Two fingers: drag to pan, pinch to zoom.
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        const midX = (t0.clientX + t1.clientX) / 2;
+        const midY = (t0.clientY + t1.clientY) / 2;
+        const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+
+        if (touchMode !== 'pan') {
+          touchMode = 'pan';
+          lastTouchMidX = midX;
+          lastTouchMidY = midY;
+          lastTouchDist = dist;
+          return;
+        }
+
+        // Same pan feel as Shift-drag on desktop.
+        this.desiredTarget.x -= (midX - lastTouchMidX) * 0.022;
+        this.desiredTarget.y += (midY - lastTouchMidY) * 0.022;
+
+        if (lastTouchDist > 0 && dist > 0) {
+          const zoomFactor = lastTouchDist / dist;
+          this.spherical.desiredRadius = Math.max(12, Math.min(70, this.spherical.desiredRadius * zoomFactor));
+        }
+
+        lastTouchMidX = midX;
+        lastTouchMidY = midY;
+        lastTouchDist = dist;
+        return;
+      }
+
+      // One finger: orbit.
+      if (touchMode === 'rotate' && e.touches.length === 1) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        movedDistance += Math.abs(dx) + Math.abs(dy);
+        this.spherical.desiredTheta -= dx * 0.0075;
+        this.spherical.desiredPhi = Math.max(0.35, Math.min(2.75, this.spherical.desiredPhi - dy * 0.0075));
+      }
+    }, { passive: false });
+
+    const endTouch = (e) => {
+      if (e.touches.length === 0) {
+        isDragging = false;
+        touchMode = null;
+      } else if (e.touches.length === 1) {
+        // Continue with the remaining finger as a rotate gesture.
+        touchMode = 'rotate';
         isDragging = true;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
       }
-    }, { passive: true });
+    };
 
-    dom.addEventListener('touchmove', (e) => {
-      if (!isDragging || e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      this.spherical.desiredTheta -= dx * 0.0075;
-      this.spherical.desiredPhi = Math.max(0.35, Math.min(2.75, this.spherical.desiredPhi - dy * 0.0075));
-    }, { passive: true });
-
-    dom.addEventListener('touchend', () => {
-      isDragging = false;
-    });
+    dom.addEventListener('touchend', endTouch, { passive: false });
+    dom.addEventListener('touchcancel', endTouch, { passive: false });
   }
 
   onResize() {
@@ -550,6 +620,25 @@ window.TransformerScene3D = class TransformerScene3D {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
+
+    // Compute the camera distance that fits the whole architecture.
+    // Portrait phones have a narrow horizontal field of view, so the
+    // default radius would crop the encoder/decoder towers.
+    const halfWidth = 8.8;
+    const halfHeight = 9.8;
+    const tanHalfFov = Math.tan((this.camera.fov * Math.PI / 180) / 2);
+    const fitRadius = Math.max(
+      halfHeight / tanHalfFov,
+      halfWidth / (tanHalfFov * Math.max(this.camera.aspect, 0.1))
+    ) * 1.05;
+    this.fitRadius = fitRadius;
+
+    // Auto-fit only on the first layout pass; after that the user's zoom wins.
+    if (!this.hasAutoFitted) {
+      this.spherical.radius = Math.max(this.spherical.radius, fitRadius);
+      this.spherical.desiredRadius = Math.max(this.spherical.desiredRadius, fitRadius);
+      this.hasAutoFitted = true;
+    }
   }
 
   updateHTMLTagsProjection() {
