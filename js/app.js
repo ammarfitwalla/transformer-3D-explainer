@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const dataBeforeEl = document.getElementById('data-before');
   const dataActionEl = document.getElementById('data-action');
   const dataAfterEl = document.getElementById('data-after');
+  const dataflowPanelEl = document.getElementById('dataflow-panel');
 
   // Navigation & Camera Buttons
   const prevCompBtn = document.getElementById('prev-comp-btn');
@@ -60,8 +61,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function setDataFlowVisible(visible) {
     dataFlowVisible = visible;
-    // Hides both the in-card sample strip and the floating 3D callout (see styles.css).
+    // Toggle directly so this still works even if an older stylesheet is cached.
     document.body.classList.toggle('hide-dataflow', !visible);
+    if (dataflowPanelEl) {
+      dataflowPanelEl.style.display = visible ? '' : 'none';
+      dataflowPanelEl.setAttribute('aria-hidden', String(!visible));
+    }
+    const calloutEl = document.querySelector('.data-callout-3d');
+    if (calloutEl) {
+      calloutEl.style.display = visible ? '' : 'none';
+    }
     if (toggleDataflowBtn) {
       toggleDataflowBtn.textContent = visible ? '🙈 Hide Sample' : '👁 Show Sample';
       toggleDataflowBtn.setAttribute('aria-expanded', String(visible));

@@ -111,6 +111,8 @@ npx --yes tailwindcss@3.4.17 -c tailwind.config.js -i css/tailwind.input.css -o 
 3. Under **Build and deployment**, choose **Deploy from a branch**, then `main` and `/ (root)`.
 4. Your site will be published at `https://<username>.github.io/<repo>/`.
 
+> When deploying an update, bump the `?v=` query string on the local CSS/JS files in `index.html` (for example `?v=20261031b`) so browsers fetch the new files instead of reusing cached ones.
+
 ## Known limitations
 
 - The in-app **📂 Code** modal is a stub: it shows a placeholder message because the embedded source bundle (`window.ModularSourcesB64`) is not included. Use the GitHub source view instead.
