@@ -34,6 +34,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const zoomInBtn = document.getElementById('zoom-in-btn');
   const zoomOutBtn = document.getElementById('zoom-out-btn');
   const toggleLabelsBtn = document.getElementById('toggle-labels-btn');
+  const toggleDataflowBtn = document.getElementById('toggle-dataflow-btn');
   const autoRotateBtn = document.getElementById('auto-rotate-btn');
 
   // Modular Code Modal
@@ -45,6 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   let tourTimer = null;
   let labelMode = 'all';
+  let dataFlowVisible = true;
 
   function openInfoBox() {
     if (infoCardEl) infoCardEl.classList.remove('is-closed');
@@ -54,6 +56,18 @@ window.addEventListener('DOMContentLoaded', () => {
   function closeInfoBox() {
     if (infoCardEl) infoCardEl.classList.add('is-closed');
     if (reopenInfoBtn) reopenInfoBtn.classList.remove('hidden');
+  }
+
+  function setDataFlowVisible(visible) {
+    dataFlowVisible = visible;
+    // Hides both the in-card sample strip and the floating 3D callout (see styles.css).
+    document.body.classList.toggle('hide-dataflow', !visible);
+    if (toggleDataflowBtn) {
+      toggleDataflowBtn.textContent = visible ? '🙈 Hide Sample' : '👁 Show Sample';
+      toggleDataflowBtn.setAttribute('aria-expanded', String(visible));
+      toggleDataflowBtn.setAttribute('aria-label', visible ? 'Hide the sample data flow' : 'Show the sample data flow');
+      toggleDataflowBtn.title = visible ? 'Hide the sample data flow' : 'Show the sample data flow';
+    }
   }
 
   function renderExplanationCard(comp, shouldOpenCard = true) {
@@ -167,6 +181,12 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   if (zoomOutBtn) {
     zoomOutBtn.addEventListener('click', () => scene3d.zoomDelta(3.2));
+  }
+
+  if (toggleDataflowBtn) {
+    toggleDataflowBtn.addEventListener('click', () => {
+      setDataFlowVisible(!dataFlowVisible);
+    });
   }
 
   if (toggleLabelsBtn) {

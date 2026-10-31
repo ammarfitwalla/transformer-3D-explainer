@@ -54,6 +54,7 @@ Then visit <http://localhost:8000>.
 | Camera presets | 🧊 3D View · 📐 Diagram Front · ➰ Side (Skip Loops) |
 | Auto-orbit | 🔄 Auto-Orbit |
 | Toggle label density | 🏷️ All Tags / Minimal Tags |
+| Hide/show the sample data flow | 🙈 Hide Sample / 👁 Show Sample |
 
 ## Project structure
 

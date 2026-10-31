@@ -198,3 +198,9 @@ body {
   pointer-events: none;
   transform: translateY(16px) scale(0.97);
 }
+
+/* Hide the sample data flow (in-card strip + floating 3D callout) when toggled off. */
+body.hide-dataflow #dataflow-panel,
+body.hide-dataflow .data-callout-3d {
+  display: none;
+}
