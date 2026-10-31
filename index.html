@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transformers Architecture — Interactive 3D Floating Model & Data Flow</title>
+  <link rel="stylesheet" href="css/tailwind.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="h-screen w-screen flex flex-col overflow-hidden">
+
+  <!-- ==================== CLEAN TOP NAVIGATION BAR ==================== -->
+  <header class="shrink-0 bg-white/90 backdrop-blur border-b border-slate-200 px-4 py-2.5 z-30 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+    <!-- Diagram Title (Matching uploaded image header) -->
+    <div class="flex items-center gap-2.5">
+      <div class="w-1.5 h-6 rounded-full bg-emerald-600"></div>
+      <div>
+        <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900">
+          Transformers Architecture <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full ml-1">Interactive 3D + Data Flow</span>
+        </h1>
+      </div>
+    </div>
+
+    <!-- Camera View Presets & Guided Tour -->
+    <div class="flex flex-wrap items-center gap-1.5">
+      <button id="tour-play-btn" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-purple-600 text-white shadow-sm hover:bg-purple-700 transition">
+        ▶ Follow the Data
+      </button>
+      <button id="cam-angle-btn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition">
+        🧊 3D View
+      </button>
+      <button id="cam-front-btn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition">
+        📐 Diagram Front
+      </button>
+      <button id="cam-side-btn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition" title="Rotate to the side to see the 3D Skip Connection loops!">
+        ➰ Side (Skip Loops)
+      </button>
+      <button id="auto-rotate-btn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition">
+        🔄 Auto-Orbit
+      </button>
+      <button id="toggle-labels-btn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition">
+        🏷️ All Tags
+      </button>
+      <button id="open-modules-btn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-700 transition">
+        📂 Code
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== FLOATING 3D VIEWPORT + EXPLANATION CARD ==================== -->
+  <main class="flex-1 relative overflow-hidden">
+
+    <!-- Top-Left Navigation Hint + Zoom Controls -->
+    <div class="absolute top-3 left-3 z-20 flex items-center gap-2 pointer-events-auto">
+      <div class="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur border border-slate-300 shadow-sm text-[11px] font-semibold text-slate-600 hidden sm:block">
+        🖱️ <strong>Drag:</strong> Rotate 3D · <strong>Scroll:</strong> Zoom · <strong>Click any Tag or Block:</strong> Watch data transform
+      </div>
+      <div class="flex items-center gap-1 bg-white/90 backdrop-blur p-1 rounded-xl border border-slate-300 shadow-sm">
+        <button id="zoom-in-btn" type="button" class="w-7 h-7 rounded-lg text-sm font-extrabold bg-slate-100 hover:bg-slate-200 text-slate-800" title="Zoom In">+</button>
+        <button id="zoom-out-btn" type="button" class="w-7 h-7 rounded-lg text-sm font-extrabold bg-slate-100 hover:bg-slate-200 text-slate-800" title="Zoom Out">−</button>
+      </div>
+    </div>
+
+    <!-- Three.js WebGL Container & Projected HTML Tags Overlay -->
+    <div id="canvas-container">
+      <div id="labels-layer"></div>
+    </div>
+
+    <!-- Small Pill to Re-Open the Info Box when Closed -->
+    <button id="reopen-info-btn" type="button" class="hidden absolute bottom-4 right-4 z-20 px-4 py-2.5 rounded-full bg-slate-900 text-white text-xs font-extrabold shadow-lg border border-slate-700 hover:bg-slate-800 transition">
+      ℹ️ Show Component Info & Data Flow
+    </button>
+
+    <!-- Bottom-Right Beginner Explanation & Live Data Transformation Card -->
+    <aside id="info-card" class="
+      info-glass-card
+      absolute bottom-4 right-4 left-4 sm:left-auto sm:w-[430px]
+      rounded-2xl p-4 sm:p-5 z-20 pointer-events-auto
+    ">
+      <!-- Top Header Row with Step Badge, Counter, and X Close Button -->
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <span id="info-badge" class="text-[11px] font-extrabold tracking-wider text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
+          INPUT STREAM · STEP 1 OF 21
+        </span>
+        <div class="flex items-center gap-2">
+          <span id="step-counter" class="text-xs font-mono font-bold text-slate-500">1 / 21</span>
+          <button id="close-info-btn" type="button" class="w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center transition" title="Close info box">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <h2 id="info-title" class="text-lg font-extrabold text-slate-900 mb-2">
+        Inputs
+      </h2>
+
+      <!-- SIMPLE LIVE DATA TRANSFORMATION BOX ("What Happens to Data Here") -->
+      <div class="p-3 rounded-xl bg-slate-900 text-white mb-3 border border-slate-700 shadow-inner">
+        <div class="flex items-center justify-between mb-1.5">
+          <span id="data-flow-badge" class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
+            📝 Raw Prompt ➔ Word Tickets
+          </span>
+          <span class="text-[10px] font-mono text-slate-400">Live Example</span>
+        </div>
+        <div class="grid grid-cols-1 gap-1 text-xs font-mono">
+          <div class="flex items-center justify-between bg-slate-800/90 px-2.5 py-1 rounded-lg">
+            <span class="text-[10px] uppercase text-slate-400 font-sans font-bold">In:</span>
+            <span id="data-before" class="text-slate-200 truncate ml-2">"The coffee is"</span>
+          </div>
+          <div class="flex items-center justify-center text-[11px] text-amber-400 font-sans font-bold py-0.5">
+            ⬇ <span id="data-action" class="mx-1">Split into 3 tokens</span> ⬇
+          </div>
+          <div class="flex items-center justify-between bg-emerald-950/80 border border-emerald-700/60 px-2.5 py-1 rounded-lg">
+            <span class="text-[10px] uppercase text-emerald-400 font-sans font-bold">Out:</span>
+            <span id="data-after" class="text-emerald-300 font-bold truncate ml-2">["The" #104] ["coffee" #402] ["is" #219]</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 to 4 Simple Lines Explaining What the Component Does -->
+      <div id="info-body" class="text-xs text-slate-700 space-y-1.5 leading-relaxed mb-2.5"></div>
+
+      <!-- 1-Line "Why It's Important" Highlight -->
+      <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 mb-3">
+        <strong class="font-extrabold">Why it matters:</strong>
+        <span id="info-why">Turns human words into numerical IDs that can flow upward into the Encoder tower.</span>
+      </div>
+
+      <!-- Prev / Next Component Guided Stepper -->
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200">
+        <button id="prev-comp-btn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition">
+          ← Prev Component
+        </button>
+        <button id="next-comp-btn" type="button" class="flex-1 py-2 px-4 rounded-xl text-xs font-extrabold bg-slate-900 text-white hover:bg-slate-800 shadow transition text-center">
+          Next Component →
+        </button>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ==================== MODULAR SOURCE CODE MODAL ==================== -->
+  <div id="modules-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-300 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+      <div class="px-5 py-3.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900">📂 Modular 3D Project Files</h3>
+          <p class="text-xs text-slate-600">Cleanly separated into modular HTML, CSS, Data, Three.js Scene, and Controller files</p>
+        </div>
+        <button id="close-modules-btn" type="button" class="px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-700">
+          ✕ Close
+        </button>
+      </div>
+      <div class="px-5 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap gap-1.5">
+        <button type="button" data-module-file="index.html" class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-200 text-slate-700">index.html</button>
+        <button type="button" data-module-file="css/styles.css" class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-200 text-slate-700">css/styles.css</button>
+        <button type="button" data-module-file="js/data.js" class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-200 text-slate-700">js/data.js</button>
+        <button type="button" data-module-file="js/scene3d.js" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-[#0F172A] text-white">js/scene3d.js</button>
+        <button type="button" data-module-file="js/app.js" class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-200 text-slate-700">js/app.js</button>
+      </div>
+      <pre id="module-code-viewer" class="flex-1 p-4 overflow-auto text-xs font-mono bg-slate-900 text-slate-100 leading-relaxed select-text"></pre>
+    </div>
+  </div>
+
+  <!-- Modular Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/scene3d.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

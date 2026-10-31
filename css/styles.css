@@ -1,0 +1,186 @@
+/* ==========================================================================
+   css/styles.css — Clean Diagram-Matched Palette, Floating 3D Tag Overlays,
+   and Live Data Flow Visualization Pills
+   ========================================================================== */
+
+:root {
+  --bg-mint: #ECF6F0;          /* Soft mint-white backdrop from the diagram */
+  --bg-panel: rgba(255, 255, 255, 0.92);
+  --text-dark: #1E293B;
+  --text-muted: #475569;
+
+  /* Exact Diagram Component Colors */
+  --col-purple-fill: #C49BFF;  /* Embeddings & Multi-Head Attention */
+  --col-purple-border: #7E22CE;
+  --col-orange-fill: #FBBF6B;  /* Add & Normalize */
+  --col-orange-border: #B45309;
+  --col-pink-fill: #F9A8D4;    /* Feed Forward & Softmax */
+  --col-pink-border: #BE185D;
+  --col-teal-fill: #14C8DC;    /* Linear */
+  --col-teal-border: #0E7490;
+  --col-gold-fill: #FEF08A;    /* Positional Encoding */
+  --col-gold-border: #B48A1E;
+  --col-encoder-bg: #A5F3FC;   /* Cyan Encoder Enclosure */
+  --col-encoder-border: #0891B2;
+  --col-decoder-bg: #FBCFE8;   /* Pink Decoder Enclosure */
+  --col-decoder-border: #BE123C;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at 50% 45%, #F7FCF9 0%, #E6F3EC 100%);
+  color: var(--text-dark);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+#canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  overflow: hidden;
+}
+
+#canvas-container:active {
+  cursor: grabbing;
+}
+
+/* Layer holding 2D projected clickable tags over the 3D WebGL scene */
+#labels-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Floating Clickable Component Tags */
+.tag-3d {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
+  border: 2px solid transparent;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease, background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tag-3d:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.24);
+  z-index: 30 !important;
+}
+
+.tag-3d.is-selected {
+  transform: translate(-50%, -50%) scale(1.14);
+  box-shadow: 0 0 0 3px #1E293B, 0 10px 24px rgba(15, 23, 42, 0.3);
+  z-index: 40 !important;
+}
+
+.tag-3d.is-dimmed {
+  opacity: 0.42;
+}
+
+/* Color themes for tags matching the diagram blocks */
+.tag-purple {
+  background: #F3E8FF;
+  color: #581C87;
+  border-color: #9333EA;
+}
+
+.tag-orange {
+  background: #FEF3C7;
+  color: #78350F;
+  border-color: #D97706;
+}
+
+.tag-pink {
+  background: #FCE7F3;
+  color: #831843;
+  border-color: #DB2777;
+}
+
+.tag-teal {
+  background: #CFFAFE;
+  color: #164E63;
+  border-color: #0891B2;
+}
+
+.tag-gold {
+  background: #FEF9C3;
+  color: #713F12;
+  border-color: #CA8A04;
+}
+
+.tag-dark {
+  background: #0F172A;
+  color: #F8FAFC;
+  border-color: #334155;
+  padding: 5px 12px;
+  font-size: 12px;
+}
+
+.tag-io {
+  background: #FFFFFF;
+  color: #0F172A;
+  border-color: #64748B;
+}
+
+/* Floating 3D Data Transformation Callout Badge tethered to the active 3D block */
+.data-callout-3d {
+  position: absolute;
+  transform: translate(-50%, -135%);
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.94);
+  color: #F8FAFC;
+  border: 2px solid #F59E0B;
+  border-radius: 14px;
+  padding: 6px 11px;
+  font-size: 11px;
+  white-space: nowrap;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.35), 0 0 16px rgba(245, 158, 11, 0.35);
+  z-index: 45;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.data-callout-3d::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 7px 7px 0;
+  border-style: solid;
+  border-color: #F59E0B transparent transparent;
+}
+
+/* Smooth glass card for the 1-5 line explanation panel */
+.info-glass-card {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border: 2px solid #CBD5E1;
+  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.18);
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.info-glass-card.is-closed {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px) scale(0.97);
+}

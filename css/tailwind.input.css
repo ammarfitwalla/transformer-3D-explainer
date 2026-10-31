@@ -1,0 +1,5 @@
+/* Tailwind source file — rebuild css/tailwind.css after changing classes.
+   See README.md → "Rebuilding the stylesheet". */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
